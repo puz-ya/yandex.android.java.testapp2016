@@ -3,11 +3,7 @@ package puzino.yandexandroidjavatestapp;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Layout;
-import android.util.Log;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TableLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,26 +14,32 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    ImageView image;
+    private ListView listView;
+    private ArtistSmallAdapter adapter;
+
+    ArrayList<ArtistObject> listOfArtistsObjects = new ArrayList<ArtistObject>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); //устанавливаем начальный вид
-        new TestParse().execute();              //получаем данные из yandex json
+        new ParseJSON().execute();              //получаем данные из yandex json
 
-        //
+        //заполняем ListView
+        listView = (ListView) findViewById(R.id.ListViewArtistSmall);
+
+        //инициализация адаптера
+        adapter = new ArtistSmallAdapter(this, listOfArtistsObjects);
+        listView.setAdapter(adapter);
     }
-
-    public static String LOG_TAG = "test_artist_log";
 
     //ассинхронный класс для загрузки файла
     //входные данные - нет, промежуточные - нет, возвращаемые - строка
-    private class TestParse extends AsyncTask<Void, Void, String> {
+    private class ParseJSON extends AsyncTask<Void, Void, String> {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
@@ -78,15 +80,12 @@ public class MainActivity extends AppCompatActivity {
             return resultJson;
         }
 
-        //после doInBackground запускаем распарсивание и заполнение UI
-        @Override
+        @Override   //после doInBackground запускаем распарсивание и заполнение UI
         protected void onPostExecute(String strJson) {
             super.onPostExecute(strJson);
 
             // получаем json-массив
             JSONArray dataJsonObj = null;
-            // список всех слоёв (карточек\блоков) с артистами
-            ListView listOfViews = (ListView) findViewById(R.id.ListViewArtistSmall);
 
             try {
                 dataJsonObj = new JSONArray(strJson);
@@ -95,20 +94,30 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < dataJsonObj.length(); i++) {
                     JSONObject artist = dataJsonObj.getJSONObject(i);
 
-                    //получаем строку с именем
-                    String name = artist.getString("name");
+                    int art_id = artist.getInt("id");
+                    String art_name = artist.getString("name"); //получаем строку с именем
+
+                    JSONArray art_genresJSON = artist.getJSONArray("genres");   //получаем массив названий жанров
+                    String art_genresNames = art_genresJSON.getString(0); //перезаписываем жанры в строку
+                    for(int j = 1 ; j < art_genresJSON.length(); j++) { // с 1, т.к. первый уже записан
+                        art_genresNames = art_genresNames + ", " + art_genresJSON.getString(j);
+                    }
+
+                    int art_tracks = artist.getInt("tracks");
+                    int art_albums = artist.getInt("albums");
+                    String art_link = artist.getString("link"); //получаем ссылку
+                    String art_description = artist.getString("description"); //получаем описание
+
                     //получаем маленькое и большое изображение, это JSONObject
-                    JSONObject cover = artist.getJSONObject("cover");
+                    JSONObject coverJSON = artist.getJSONObject("cover");
+                    String art_cover_small = coverJSON.getString("small");
+                    String art_cover_big = coverJSON.getString("big");
 
-                    String cover_small = cover.getString("small");
-                    String cover_big = cover.getString("big");
+                    //помещаем данные в класс для исполнителей
+                    ArtistObject ArtObject = new ArtistObject(art_id, art_name, art_genresNames, art_tracks, art_albums, art_link, art_description, art_cover_small, art_cover_big);
 
-                    //TODO: идём в цикле по слою и вставляем layouts_artist_short по числу исполнителей
-                    //TODO: Заготовка для скачивания изображений исполнителей и их добавление в layout
-                    //Drawable downloadedImage = ImageGet(this, url);
-                    //image.setImageDrawable(downloadedImage);
-
-                    Log.d(LOG_TAG, "Name: " + name + cover_big);
+                    //помещаем его в общий список, для занесения в ListView
+                    listOfArtistsObjects.add(ArtObject);
                 }
 
             } catch (JSONException e) {
