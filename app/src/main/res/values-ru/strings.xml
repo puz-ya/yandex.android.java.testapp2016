@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Исполнители</string>
+    <string name="default_description_small">Тут будет короткое описание...</string>
+</resources>

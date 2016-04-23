@@ -9,8 +9,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="puzino.yandexandroidjavatestapp.MainActivity">
 
-    <TextView
+    <!-- Список с краткими данными об исполнителях -->
+    <ListView
+        android:id="@+id/ListViewArtistSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello Yandex!" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true" />
+
 </RelativeLayout>

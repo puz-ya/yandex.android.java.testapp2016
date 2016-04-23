@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">yandex.android.java.testapp</string>
+    <string name="app_name">Artists</string>
+    <string name="default_description_small">Here will be a short description...</string>
 </resources>
