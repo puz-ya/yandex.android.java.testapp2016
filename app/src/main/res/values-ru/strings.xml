@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Исполнители</string>
     <string name="default_description_small">Тут будет короткое описание...</string>
+    <string name="unknown">Неизвестно</string>
 </resources>
