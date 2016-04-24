@@ -1,7 +1,6 @@
 package puzino.yandexandroidjavatestapp;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -10,11 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.android.volley.toolbox.NetworkImageView;
 
 import java.util.List;
 
@@ -25,6 +20,7 @@ public class ArtistSmallAdapter extends ArrayAdapter<String> {
 
     private List<ArtistObject> data;
     private Context context;
+    ImageView smallImage;
 
     public ArtistSmallAdapter(Context context, List<ArtistObject> data) {
         super(context, R.layout.layout_artist_short);
@@ -58,43 +54,55 @@ public class ArtistSmallAdapter extends ArrayAdapter<String> {
 
         // проставляем данные для элементов
         TextView textArea = (TextView)view.findViewById(R.id.textSmall);
-        ImageView smallImage = (ImageView)view.findViewById(R.id.imageViewSmall);
+        smallImage = (ImageView)view.findViewById(R.id.imageViewSmall);
 
         // получаем элемент из списка
         ArtistObject ObjectOfArtist = data.get(position);
 
-        String albums_count = "";   //в зависимости от количества, меняется падеж
-        String tracks_count = "";   //в зависимости от количества, меняется падеж
+        //в зависимости от количества, меняется падеж (по умолчанию 1 шт)
+        String albums_count_text = context.getResources().getString(R.string.album_1);
+        albums_count_text = getFinalLetter(ObjectOfArtist.getAlbums(), albums_count_text);
+        String tracks_count_text = context.getResources().getString(R.string.track_1);
+        tracks_count_text = getFinalLetter(ObjectOfArtist.getTracks(), tracks_count_text);
 
         //формируем html строку для наглядности
         String htmlStr = "<b>" + ObjectOfArtist.getNameOfArtist() + "</b> <br />" + ObjectOfArtist.getGenresNames() + "<br />"
                 + "<a href=\"" + ObjectOfArtist.getLink() + "\">" + ObjectOfArtist.getLink() + "</a>" + "<br />"
-                + ObjectOfArtist.getAlbums().toString() + "" + ", "
-                + ObjectOfArtist.getTracks().toString();
+                + ObjectOfArtist.getAlbums().toString() + " " + albums_count_text + ", "
+                + ObjectOfArtist.getTracks().toString() + " " + tracks_count_text;
 
         // устанавливаем значения компонентам одного эелемента списка
         textArea.setText(Html.fromHtml(htmlStr));
         textArea.setMovementMethod (LinkMovementMethod.getInstance());
 
-        Drawable downloadedImage = LoadImageFromWebOperations(ObjectOfArtist.getCover_small(),ObjectOfArtist.getNameOfArtist());
-        smallImage.setImageDrawable(downloadedImage);
+        if(ObjectOfArtist.getCover_small() != "") {
 
+            /* Хорошая шутка про jpeg CMYK */
+
+            NetworkImageView ivCover = (NetworkImageView) view.findViewById(R.id.imageViewSmall);
+            ivCover.setImageUrl(ObjectOfArtist.getCover_small(), VolleySingleton.getInstance().getImageLoader());
+
+        }else{
+            smallImage.setImageDrawable(context.getResources().getDrawable(R.drawable.image_view_small_blank));
+        }
         return view;
     }
 
-    //TODO: идём в цикле по слою и вставляем layouts_artist_short по числу исполнителей
-    //TODO: Заготовка для скачивания изображений исполнителей и их добавление в layout
-    //Drawable downloadedImage = ImageGet(this, url);
-    //image.setImageDrawable(downloadedImage);
+    //делаем правильные окончания в зависимости от количества (альбомов или треков)
+    public String getFinalLetter(Integer in, String str){
 
-    public static Drawable LoadImageFromWebOperations(String url, String name) {
-        try {
-            InputStream is = (InputStream) new URL(url).getContent();
-            Drawable d = Drawable.createFromStream(is, name);
-            return d;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        if(in % 10 == 0) {
+            return str + context.getResources().getString(R.string.albums_tracks_many);
         }
+
+        if(in % 10 == 1 && in != 11){
+            return str;
+        }
+
+        if((in % 10 == 2 || in % 10 == 3 || in % 10 == 4) && (in != 12 || in != 13 || in != 14)){
+            return str + context.getResources().getString(R.string.albums_tracks_2);
+        }
+
+        return str + context.getResources().getString(R.string.albums_tracks_many);
     }
 }

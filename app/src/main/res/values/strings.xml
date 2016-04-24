@@ -2,6 +2,15 @@
     <string name="app_name">Artists</string>
     <string name="default_description_small">Here will be a short description...</string>
     <string name="unknown">Unknown</string>
-    <string name="error_connect">Error while downloading. Please, check connection.</string>
+
+    <string name="error_connect">Error while downloading JSON. Please, check connection.</string>
     <string name="error_parse">Error while reading. Please, contact developer.</string>
+    <string name="error_image_small">Error while downloading small image. Please, check connection.</string>
+
+    <string name="album_1">album</string> <!-- один альбом -->
+    <string name="track_1">track</string>
+    <string name="albums_tracks_2">s</string> <!-- два альбомА / трекА (добавляем) -->
+    <string name="albums_tracks_many">s</string> <!-- пятнадцать альбомОВ / трекОВ (добавляем) -->
+
+    <string name="title_activity_detail">Details</string>
 </resources>

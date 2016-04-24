@@ -5,13 +5,14 @@
     android:id="@+id/layout_artist_small"
     android:orientation="horizontal"
     android:padding="5px"
+    android:clickable="true"
     >
 
-        <ImageView
+        <com.android.volley.toolbox.NetworkImageView
             android:id="@+id/imageViewSmall"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:src="@drawable/image_view_small_blank"
+            android:layout_height="100dp"
+            android:layout_width="100dp"
+
             android:minHeight="100dp"
             android:maxHeight="100dp"
             android:minWidth="100dp"

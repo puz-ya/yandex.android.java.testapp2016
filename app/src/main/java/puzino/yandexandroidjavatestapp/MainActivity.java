@@ -1,11 +1,15 @@
 package puzino.yandexandroidjavatestapp;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -24,37 +28,61 @@ public class MainActivity extends AppCompatActivity {
     boolean error_connect = false;  //предполагаем наличие соединения и успешно загрузки
     boolean error_parse = false;  //предполагаем успешную разделку json файла
 
-    private ListView listView;
-    private ArtistSmallAdapter adapter;
+    ListView listView;
+    RelativeLayout relativeLayout;
+    ArtistSmallAdapter adapter;
+    ProgressDialog pDialog;
 
+    final Activity main_context = MainActivity.this;
     ArrayList<ArtistObject> listOfArtistsObjects = new ArrayList<ArtistObject>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); //устанавливаем начальный вид
-        new ParseJSON().execute();              //получаем данные из yandex json в отдельном потоке
 
-        //находим ListView
+        //находим ListView (список всех)
         listView = (ListView) findViewById(R.id.ListViewArtistSmall);
+        relativeLayout = (RelativeLayout) findViewById(R.id.layout_artist_small);
 
         //инициализация адаптера
         adapter = new ArtistSmallAdapter(this, listOfArtistsObjects);
         listView.setAdapter(adapter);
+
+        //после нажатия создаём новую Активность
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Integer pos = listView.getSelectedItemPosition();
+
+                ArtistObject detObject = listOfArtistsObjects.get(pos);
+                Intent i = DetailActivity.newIntent(MainActivity.this, detObject);
+                startActivity(i);
+            }
+        });
+
+        new ParseJSON().execute();              //получаем данные из yandex json в отдельном потоке
+
     }
 
     //ассинхронный класс для загрузки файла (новый поток обязателен)
-    //входные данные - нет, промежуточные (прогресс) - нет, возвращаемые - строка
+    //входные данные - нет, промежуточные (прогресс) - строка с данными, возвращаемые - нет
     private class ParseJSON extends AsyncTask<Void, String, Void> {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String resultJson = "";
         Integer progressInt = 0;
-        final Activity main_context = MainActivity.this;
 
-        //перед стартом "закачки" надо показать начальное состояние (Загрузка...)
-        //TODO: написать protected void onPreExecute()
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //диалог прогресса слишком долгий (виснет)...
+            //pDialog = new ProgressDialog(MainActivity.this);
+            //pDialog.setMessage("Loading JSON file ...");
+            //pDialog.show();
+
+        }
 
         @Override   // получаем данные с внешнего ресурса в фоне
         protected Void doInBackground(Void... params) {
@@ -93,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
             //если успешно скачали, то начинаем парсить
             if(!error_connect) {
                 try {
+                    publishProgress("-3");
                     dataJsonObj = new JSONArray(resultJson);
 
                     // идём по всем исполнителям
@@ -159,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
                         publishProgress(strToAddAndUpdate);
 
                     }
-                    //publishProgress(progressInt);   //почему-то необходимо вызывать после цикла... :/
 
                 } catch (JSONException e) {
                     error_parse = true;
@@ -170,9 +198,13 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
+        protected void onPostExecute(Void... params) {
+            //pDialog.dismiss();
+        }
 
         @Override
         protected void onProgressUpdate(String... progress) {
+
 
             if(progress[0] == "-1"){
                 Toast.makeText(main_context, getResources().getString(R.string.error_connect), Toast.LENGTH_LONG).show();
@@ -183,6 +215,15 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(main_context, getResources().getString(R.string.error_parse), Toast.LENGTH_LONG).show();
                 return;
             }
+
+            if(progress[0] == "-3"){
+                //pDialog.setMessage("Parsing JSON file ...");
+                return;
+            }
+
+            //прячем диалог (слишком долго)
+            //pDialog.hide();
+
             //помещаем данные в объект для исполнителей
             ArtistObject ArtObject = new ArtistObject(Integer.parseInt(progress[0]), progress[1], progress[2], Integer.parseInt(progress[3]), Integer.parseInt(progress[4]), progress[5], progress[6], progress[7], progress[8]);
             //помещаем объект в общий список, для занесения в ListView

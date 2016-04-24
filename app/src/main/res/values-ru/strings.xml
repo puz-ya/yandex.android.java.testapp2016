@@ -4,5 +4,11 @@
     <string name="default_description_small">Тут будет короткое описание...</string>
     <string name="unknown">Неизвестно</string>
     <string name="error_parse">Ошибка чтения данных. Пожалуйста, обратитесь к разработчику.</string>
-    <string name="error_connect">Ошибка при загрузке. Пожалуйста, проверьте соединение.</string>
+    <string name="error_connect">Ошибка при загрузке JSON. Пожалуйста, проверьте соединение.</string>
+    <string name="album_1">альбом</string>
+    <string name="error_image_small">Ошибка при загрузке изображение. Пожалуйста, проверьте соединение.</string>
+    <string name="title_activity_detail">Подробности</string>
+    <string name="track_1">трек</string>
+    <string name="albums_tracks_2">а</string> <!-- два альбомА / трекА (добавляем) -->
+    <string name="albums_tracks_many">ов</string> <!-- пятнадцать альбомОВ / трекОВ (добавляем) -->
 </resources>
