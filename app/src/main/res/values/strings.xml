@@ -2,4 +2,6 @@
     <string name="app_name">Artists</string>
     <string name="default_description_small">Here will be a short description...</string>
     <string name="unknown">Unknown</string>
+    <string name="error_connect">Error while downloading. Please, check connection.</string>
+    <string name="error_parse">Error while reading. Please, contact developer.</string>
 </resources>

@@ -6,12 +6,12 @@ package puzino.yandexandroidjavatestapp;
 public class ArtistObject {
 
     //9 полей из JSON файла
-    private int id;
+    private Integer id;
     private String name;
     private String genresNames; //список жанров через ","
 
-    private int tracks;
-    private int albums;
+    private Integer tracks;
+    private Integer albums;
     private String link;
     private String description;
 
@@ -19,11 +19,11 @@ public class ArtistObject {
     private String cover_big;
 
     public ArtistObject(
-            int id,
+            Integer id,
             String name,
             String genresNames,
-            int tracks,
-            int albums,
+            Integer tracks,
+            Integer albums,
             String link,
             String description,
             String cover_small,
@@ -43,7 +43,7 @@ public class ArtistObject {
     }
 
     //------------- ID исполнителя
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -70,7 +70,7 @@ public class ArtistObject {
     }
 
     //-------------- Кол-во треков
-    public int getTracks() {
+    public Integer getTracks() {
         return tracks;
     }
 
@@ -79,7 +79,7 @@ public class ArtistObject {
     }
 
     //-------------- Кол-во альбомов
-    public int getAlbums() {
+    public Integer getAlbums() {
         return albums;
     }
 

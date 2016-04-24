@@ -3,4 +3,6 @@
     <string name="app_name">Исполнители</string>
     <string name="default_description_small">Тут будет короткое описание...</string>
     <string name="unknown">Неизвестно</string>
+    <string name="error_parse">Ошибка чтения данных. Пожалуйста, обратитесь к разработчику.</string>
+    <string name="error_connect">Ошибка при загрузке. Пожалуйста, проверьте соединение.</string>
 </resources>
