@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -23,15 +25,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
+
+public class MainActivity extends AppCompatActivity implements OnItemClickListener{
 
     boolean error_connect = false;  //предполагаем наличие соединения и успешно загрузки
     boolean error_parse = false;  //предполагаем успешную разделку json файла
 
     ListView listView;
-    RelativeLayout relativeLayout;
+    LinearLayout relativeLayout;
     ArtistSmallAdapter adapter;
     ProgressDialog pDialog;
+    String LOG_TAG = "myLogs";
 
     final Activity main_context = MainActivity.this;
     ArrayList<ArtistObject> listOfArtistsObjects = new ArrayList<ArtistObject>();
@@ -43,26 +50,34 @@ public class MainActivity extends AppCompatActivity {
 
         //находим ListView (список всех)
         listView = (ListView) findViewById(R.id.ListViewArtistSmall);
-        relativeLayout = (RelativeLayout) findViewById(R.id.layout_artist_small);
+        relativeLayout = (LinearLayout) findViewById(R.id.layout_artist_small);
 
         //инициализация адаптера
         adapter = new ArtistSmallAdapter(this, listOfArtistsObjects);
         listView.setAdapter(adapter);
 
-        //после нажатия создаём новую Активность
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Integer pos = listView.getSelectedItemPosition();
 
-                ArtistObject detObject = listOfArtistsObjects.get(pos);
-                Intent i = DetailActivity.newIntent(MainActivity.this, detObject);
-                startActivity(i);
+        listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+             Log.d(LOG_TAG, "itemSelect: position = " + position + ", id = " + id);
+            }
+            public void onNothingSelected(AdapterView<?> parent) {
+                Log.d(LOG_TAG, "itemSelect: nothing");
             }
         });
+        //*/
 
         new ParseJSON().execute();              //получаем данные из yandex json в отдельном потоке
+    }
 
+
+    @Override
+    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+        // arg2 = the id of the item in our view (List/Grid) that we clicked
+        // arg3 = the id of the item that we have clicked
+        // if we didn't assign any id for the Object (Book) the arg3 value is 0
+        // That means if we comment, aBookDetail.setBookIsbn(i); arg3 value become 0
+        Toast.makeText(getApplicationContext(), "You clicked on position : " + arg2 + " and id : " + arg3, Toast.LENGTH_LONG).show();
     }
 
     //ассинхронный класс для загрузки файла (новый поток обязателен)
@@ -78,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             //диалог прогресса слишком долгий (виснет)...
-            //pDialog = new ProgressDialog(MainActivity.this);
-            //pDialog.setMessage("Loading JSON file ...");
-            //pDialog.show();
+            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog.setMessage("Loading JSON file ...");
+            pDialog.show();
 
         }
 
@@ -199,37 +214,38 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(Void... params) {
-            //pDialog.dismiss();
+            pDialog.dismiss();
+
         }
 
         @Override
         protected void onProgressUpdate(String... progress) {
 
+            //прячем диалог (слишком долго)
+            pDialog.hide();
 
-            if(progress[0] == "-1"){
+            if(progress[0].equals("-1")){
                 Toast.makeText(main_context, getResources().getString(R.string.error_connect), Toast.LENGTH_LONG).show();
                 return;
             }
 
-            if(progress[0] == "-2"){
+            if(progress[0].equals("-2")){
                 Toast.makeText(main_context, getResources().getString(R.string.error_parse), Toast.LENGTH_LONG).show();
                 return;
             }
 
-            if(progress[0] == "-3"){
+            if(progress[0].equals("-3")){
                 //pDialog.setMessage("Parsing JSON file ...");
                 return;
             }
-
-            //прячем диалог (слишком долго)
-            //pDialog.hide();
 
             //помещаем данные в объект для исполнителей
             ArtistObject ArtObject = new ArtistObject(Integer.parseInt(progress[0]), progress[1], progress[2], Integer.parseInt(progress[3]), Integer.parseInt(progress[4]), progress[5], progress[6], progress[7], progress[8]);
             //помещаем объект в общий список, для занесения в ListView
             listOfArtistsObjects.add(ArtObject);
             adapter.notifyDataSetChanged();
-            listView.requestLayout();
+            //listView.requestLayout();
+            listView.invalidate();
         }
     }
 

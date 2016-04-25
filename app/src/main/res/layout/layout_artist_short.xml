@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/layout_artist_small"
@@ -17,6 +17,8 @@
             android:maxHeight="100dp"
             android:minWidth="100dp"
             android:maxWidth="100dp"
+
+            android:focusable="false"
             />
 
         <TextView
@@ -26,6 +28,8 @@
             android:text="@string/default_description_small"
             android:layout_toRightOf="@id/imageViewSmall"
             android:layout_marginLeft="5dp"
+
+            android:focusable="false"
             />
 
-</RelativeLayout>
+</LinearLayout>
