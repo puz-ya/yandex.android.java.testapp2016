@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
     tools:context="puzino.yandexandroidjavatestapp.DetailActivity">
 
@@ -16,15 +16,14 @@
         android:maxHeight="100dp"
         android:minWidth="100dp"
         android:maxWidth="100dp"
-
-        android:padding="24dp"
         />
 
     <TextView
         android:id="@+id/textBigMiddle"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:padding="24dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
         android:text="@string/default_description_small"
         />
 
@@ -32,7 +31,8 @@
         android:id="@+id/textBigBottom"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:padding="24dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
         android:text="@string/default_description_small"
         />
 </LinearLayout>

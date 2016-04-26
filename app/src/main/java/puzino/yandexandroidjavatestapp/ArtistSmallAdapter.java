@@ -1,13 +1,13 @@
 package puzino.yandexandroidjavatestapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 import com.android.volley.toolbox.NetworkImageView;
 
@@ -43,12 +43,6 @@ public class ArtistSmallAdapter extends ArrayAdapter<ArtistObject> {
         return data.get(position);
     } //*/
 
-    /*
-    @Override
-    public ArtistObject getItem(int position) {
-        return data.get(position);
-    } */
-
     @Override
     public long getItemId(int position) {
         return position;
@@ -63,12 +57,11 @@ public class ArtistSmallAdapter extends ArrayAdapter<ArtistObject> {
 
     // заполнение элементов списка
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
         String htmlStr = "";
-        NetworkImageView ivCover = null;
-
         ViewHolder holder;
+
         if(convertView==null)
         {
             holder = new ViewHolder();
@@ -85,25 +78,19 @@ public class ArtistSmallAdapter extends ArrayAdapter<ArtistObject> {
             holder=(ViewHolder)convertView.getTag();
         }
 
-
         convertView.setOnClickListener(new View.OnClickListener()
         {
 
             @Override
             public void onClick(View v)
             {
-                int i = 1;
-                if(i==0)
-                {
-                    i=1;
-                }
-                else
-                {
-                    i=0;
-                }
-
+                ArtistObject aObj = data.get(position);
+                Intent i = DetailActivity.newIntent(context, aObj);
+                context.startActivity(i);
             }
-        });
+        }
+        );
+        //*/
 
 
         // получаем элемент из списка
@@ -114,9 +101,9 @@ public class ArtistSmallAdapter extends ArrayAdapter<ArtistObject> {
 
         //в зависимости от количества, меняется падеж (по умолчанию 1 шт)
         String albums_count_text = context.getResources().getString(R.string.album_1);
-        albums_count_text = getFinalLetter(album_num, albums_count_text);
+        albums_count_text = ArtistStrings.getFinalLetter(context.getResources(),album_num, albums_count_text);
         String tracks_count_text = context.getResources().getString(R.string.track_1);
-        tracks_count_text = getFinalLetter(track_num, tracks_count_text);
+        tracks_count_text = ArtistStrings.getFinalLetter(context.getResources(),track_num, tracks_count_text);
 
         //формируем html строку для наглядности
         htmlStr = "<b>" + ObjectOfArtist.getNameOfArtist() + "</b> <br />" + ObjectOfArtist.getGenresNames() + "<br />"
@@ -130,9 +117,11 @@ public class ArtistSmallAdapter extends ArrayAdapter<ArtistObject> {
 
         if(!ObjectOfArtist.getCover_small().equals("")) {
 
-                /* Хорошая шутка про jpeg CMYK */
+                /* Хорошая шутка про jpeg CMYK, грузим прямо из интернета */
 
             holder.img = (NetworkImageView) convertView.findViewById(R.id.imageViewSmall);
+            holder.img.setDefaultImageResId(R.drawable.image_view_small_blank); //устанавливаем картинку по-умолчанию
+            holder.img.setErrorImageResId(R.drawable.image_view_small_error);   //устанавливаем картинку ошибки
             holder.img.setImageUrl(ObjectOfArtist.getCover_small(), VolleySingleton.getInstance().getImageLoader());
 
         }else{
@@ -142,23 +131,4 @@ public class ArtistSmallAdapter extends ArrayAdapter<ArtistObject> {
         return convertView;
     }
 
-
-
-    //делаем правильные окончания в зависимости от количества (альбомов или треков)
-    public String getFinalLetter(Integer in, String str){
-
-        if(in % 10 == 0) {
-            return str + context.getResources().getString(R.string.albums_tracks_many);
-        }
-
-        if(in % 10 == 1 && in != 11){
-            return str;
-        }
-
-        if((in % 10 == 2 || in % 10 == 3 || in % 10 == 4) && (in != 12 && in != 13 && in != 14)){
-            return str + context.getResources().getString(R.string.albums_tracks_2);
-        }
-
-        return str + context.getResources().getString(R.string.albums_tracks_many);
-    }
 }

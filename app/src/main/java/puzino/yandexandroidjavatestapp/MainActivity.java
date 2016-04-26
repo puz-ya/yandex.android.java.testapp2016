@@ -29,7 +29,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 
-public class MainActivity extends AppCompatActivity implements OnItemClickListener{
+public class MainActivity extends AppCompatActivity{
 
     boolean error_connect = false;  //предполагаем наличие соединения и успешно загрузки
     boolean error_parse = false;  //предполагаем успешную разделку json файла
@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     ArtistSmallAdapter adapter;
     ProgressDialog pDialog;
     String LOG_TAG = "myLogs";
+    private static final String EXTRA_OBJECT = "puzino.yandexandroidjavatestapp.ArtistObject";
 
     final Activity main_context = MainActivity.this;
     ArrayList<ArtistObject> listOfArtistsObjects = new ArrayList<ArtistObject>();
@@ -55,11 +56,13 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         //инициализация адаптера
         adapter = new ArtistSmallAdapter(this, listOfArtistsObjects);
         listView.setAdapter(adapter);
+        listView.setItemsCanFocus(true);
 
-
-        listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        /*
+        listView.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-             Log.d(LOG_TAG, "itemSelect: position = " + position + ", id = " + id);
+                Log.d(LOG_TAG, "itemSelect: position = " + position + ", id = " + id);
             }
             public void onNothingSelected(AdapterView<?> parent) {
                 Log.d(LOG_TAG, "itemSelect: nothing");
@@ -67,10 +70,13 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         });
         //*/
 
+
+
         new ParseJSON().execute();              //получаем данные из yandex json в отдельном потоке
     }
 
 
+    /*
     @Override
     public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
         // arg2 = the id of the item in our view (List/Grid) that we clicked
@@ -78,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         // if we didn't assign any id for the Object (Book) the arg3 value is 0
         // That means if we comment, aBookDetail.setBookIsbn(i); arg3 value become 0
         Toast.makeText(getApplicationContext(), "You clicked on position : " + arg2 + " and id : " + arg3, Toast.LENGTH_LONG).show();
-    }
+    } */
 
     //ассинхронный класс для загрузки файла (новый поток обязателен)
     //входные данные - нет, промежуточные (прогресс) - строка с данными, возвращаемые - нет
@@ -136,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             //если успешно скачали, то начинаем парсить
             if(!error_connect) {
                 try {
-                    publishProgress("-3");
+                    publishProgress("-2");
                     dataJsonObj = new JSONArray(resultJson);
 
                     // идём по всем исполнителям
@@ -206,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
                 } catch (JSONException e) {
                     error_parse = true;
-                    publishProgress("-2");
+                    publishProgress("-3");
                     e.printStackTrace();
                 }
             }
@@ -230,14 +236,15 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             }
 
             if(progress[0].equals("-2")){
-                Toast.makeText(main_context, getResources().getString(R.string.error_parse), Toast.LENGTH_LONG).show();
+                pDialog.setMessage("Parsing JSON file ...");
                 return;
             }
 
             if(progress[0].equals("-3")){
-                //pDialog.setMessage("Parsing JSON file ...");
+                Toast.makeText(main_context, getResources().getString(R.string.error_parse), Toast.LENGTH_LONG).show();
                 return;
             }
+
 
             //помещаем данные в объект для исполнителей
             ArtistObject ArtObject = new ArtistObject(Integer.parseInt(progress[0]), progress[1], progress[2], Integer.parseInt(progress[3]), Integer.parseInt(progress[4]), progress[5], progress[6], progress[7], progress[8]);
