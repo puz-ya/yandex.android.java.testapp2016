@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void refreshMessage(View view) {
-        bt.setVisibility(View.INVISIBLE);
+        bt.setVisibility(View.GONE);
         parseJSON = new ParseJSON();
         parseJSON.execute();
     }
@@ -240,11 +240,14 @@ public class MainActivity extends AppCompatActivity{
 
             //в любом случае закрываем ширму диалога
             pDialog.dismiss();
+            //показываем, что картинки ещё загружаются
+            Toast.makeText(main_context, getResources().getString(R.string.async_finish), Toast.LENGTH_LONG).show();
 
+            //если были ошибки, показываем кнопку обновления
             if(error_connect || error_parse){
                 bt.setVisibility(View.VISIBLE);
             }else{
-                bt.setVisibility(View.INVISIBLE);
+                bt.setVisibility(View.GONE);
             }
 
         }

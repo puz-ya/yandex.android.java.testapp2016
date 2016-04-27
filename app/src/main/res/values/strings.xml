@@ -7,13 +7,14 @@
     <string name="error_parse">Error while reading. Please, contact developer.</string>
     <string name="error_image_small">Error while downloading small image. Please, check connection.</string>
 
-    <string name="async_0_1_start">Start loading JSON file ...</string>
-    <string name="async_1_1_connect">Connecting ...</string>
-    <string name="async_1_2_convert">Converted JSON to String() ...</string>
-    <string name="async_2_1_parsing">Start parsing JSON file ...</string>
-    <string name="async_2_2_parsing">Parsing JSON file (25%)...</string>
-    <string name="async_2_3_parsing">Parsing JSON file (50%)...</string>
-    <string name="async_2_4_parsing">Parsing JSON file (75%)...</string>
+    <string name="async_0_1_start">Connecting ...</string>
+    <string name="async_1_1_connect">Start loading JSON file ...</string>
+    <string name="async_1_2_convert">Converting file to string ...</string>
+    <string name="async_2_1_parsing">Start parsing content ...</string>
+    <string name="async_2_2_parsing">Process the content (25%)...</string>
+    <string name="async_2_3_parsing">Process the content (50%)...</string>
+    <string name="async_2_4_parsing">Process the content (75%)...</string>
+    <string name="async_finish">Pictures will be loaded from internet (if possibly).</string>
 
     <string name="album_1">album</string> <!-- один альбом -->
     <string name="track_1">track</string>

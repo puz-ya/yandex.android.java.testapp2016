@@ -106,14 +106,15 @@ public class ArtistSmallAdapter extends ArrayAdapter<ArtistObject> {
         tracks_count_text = ArtistStrings.getFinalLetter(context.getResources(),track_num, tracks_count_text);
 
         //формируем html строку для наглядности
-        htmlStr = "<b>" + ObjectOfArtist.getNameOfArtist() + "</b> <br />" + ObjectOfArtist.getGenresNames() + "<br />"
-                + "<a href=\"" + ObjectOfArtist.getLink() + "\">" + ObjectOfArtist.getLink() + "</a>" + "<br />"
+        htmlStr = "<h3>" + ObjectOfArtist.getNameOfArtist() + "</h3>"
+                + ObjectOfArtist.getGenresNames() + "<br /> <br />"
+                //+ "<a href=\"" + ObjectOfArtist.getLink() + "\">" + ObjectOfArtist.getLink() + "</a>" + "<br />"
                 + album_num.toString() + " " + albums_count_text + ", "
                 + track_num.toString() + " " + tracks_count_text;
 
         holder.txt.setText(Html.fromHtml(htmlStr));
         // устанавливаем значения компонентам одного эелемента списка
-        holder.txt.setMovementMethod (LinkMovementMethod.getInstance());
+        // holder.txt.setMovementMethod (LinkMovementMethod.getInstance()); //отказался от ссылок в списке - много места на малых экранах
 
         if(!ObjectOfArtist.getCover_small().equals("")) {
 
