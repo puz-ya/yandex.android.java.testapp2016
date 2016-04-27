@@ -10,5 +10,13 @@
     <string name="title_activity_detail">Подробности</string>
     <string name="track_1">трек</string>
     <string name="albums_tracks_2">а</string> <!-- два альбомА / трекА (добавляем) -->
-    <string name="albums_tracks_many">ов</string> <!-- пятнадцать альбомОВ / трекОВ (добавляем) -->
+    <string name="albums_tracks_many">ов</string>
+    <string name="action_refresh">Обновить</string>
+    <string name="async_0_1_start">Начинаем загружать JSON файл...</string>
+    <string name="async_1_1_connect">Соединяемся...</string>
+    <string name="async_1_2_convert">Конвертируем JSON к Строке() ...</string>
+    <string name="async_2_1_parsing">Начали разбирать JSON файл ...</string>
+    <string name="async_2_2_parsing">Разбираем JSON файл (25%)...</string>
+    <string name="async_2_3_parsing">Разбираем JSON файл (50%)...</string>
+    <string name="async_2_4_parsing">Разбираем JSON файл (75%)...</string> <!-- пятнадцать альбомОВ / трекОВ (добавляем) -->
 </resources>

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -31,15 +32,19 @@ import android.widget.AdapterView.OnItemSelectedListener;
 
 public class MainActivity extends AppCompatActivity{
 
+    //главный урл всея приложения
+    public String mainYandexURL = "http://download.cdn.yandex.net/mobilization-2016/artists.json";
+
     boolean error_connect = false;  //предполагаем наличие соединения и успешно загрузки
     boolean error_parse = false;  //предполагаем успешную разделку json файла
+
+    ParseJSON parseJSON = null;
+    Button bt = null;
 
     ListView listView;
     LinearLayout relativeLayout;
     ArtistSmallAdapter adapter;
     ProgressDialog pDialog;
-    String LOG_TAG = "myLogs";
-    private static final String EXTRA_OBJECT = "puzino.yandexandroidjavatestapp.ArtistObject";
 
     final Activity main_context = MainActivity.this;
     ArrayList<ArtistObject> listOfArtistsObjects = new ArrayList<ArtistObject>();
@@ -50,6 +55,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main); //устанавливаем начальный вид
 
         //находим ListView (список всех)
+        bt = (Button) findViewById(R.id.button1);
         listView = (ListView) findViewById(R.id.ListViewArtistSmall);
         relativeLayout = (LinearLayout) findViewById(R.id.layout_artist_small);
 
@@ -58,33 +64,16 @@ public class MainActivity extends AppCompatActivity{
         listView.setAdapter(adapter);
         listView.setItemsCanFocus(true);
 
-        /*
-        listView.setOnItemSelectedListener(new OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(LOG_TAG, "itemSelect: position = " + position + ", id = " + id);
-            }
-            public void onNothingSelected(AdapterView<?> parent) {
-                Log.d(LOG_TAG, "itemSelect: nothing");
-            }
-        });
-        //*/
+        parseJSON = new ParseJSON();
+        parseJSON.execute();              //получаем данные из yandex json в отдельном потоке
 
-
-
-        new ParseJSON().execute();              //получаем данные из yandex json в отдельном потоке
     }
 
-
-    /*
-    @Override
-    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        // arg2 = the id of the item in our view (List/Grid) that we clicked
-        // arg3 = the id of the item that we have clicked
-        // if we didn't assign any id for the Object (Book) the arg3 value is 0
-        // That means if we comment, aBookDetail.setBookIsbn(i); arg3 value become 0
-        Toast.makeText(getApplicationContext(), "You clicked on position : " + arg2 + " and id : " + arg3, Toast.LENGTH_LONG).show();
-    } */
+    public void refreshMessage(View view) {
+        bt.setVisibility(View.INVISIBLE);
+        parseJSON = new ParseJSON();
+        parseJSON.execute();
+    }
 
     //ассинхронный класс для загрузки файла (новый поток обязателен)
     //входные данные - нет, промежуточные (прогресс) - строка с данными, возвращаемые - нет
@@ -93,14 +82,13 @@ public class MainActivity extends AppCompatActivity{
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String resultJson = "";
-        Integer progressInt = 0;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             //диалог прогресса слишком долгий (виснет)...
             pDialog = new ProgressDialog(MainActivity.this);
-            pDialog.setMessage("Loading JSON file ...");
+            pDialog.setMessage(getResources().getString(R.string.async_0_1_start));
             pDialog.show();
 
         }
@@ -108,12 +96,20 @@ public class MainActivity extends AppCompatActivity{
         @Override   // получаем данные с внешнего ресурса в фоне
         protected Void doInBackground(Void... params) {
             try {
-                URL url = new URL("http://download.cdn.yandex.net/mobilization-2016/artists.json");
+                URL url = new URL(mainYandexURL);
+
+                //обнуляем
+                error_connect = false;
+                error_parse = false;
 
                 //соединяемся
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
+                urlConnection.setConnectTimeout(5000);  //5 секунд
+                urlConnection.setReadTimeout(5000);  //5 секунд
                 urlConnection.connect();
+
+                publishProgress("1.1"); //1.1 - загрузка, 2.1 - парсинг
 
                 InputStream inputStream = urlConnection.getInputStream();
                 StringBuffer buffer = new StringBuffer();
@@ -128,13 +124,15 @@ public class MainActivity extends AppCompatActivity{
                 //переводим в строку
                 resultJson = buffer.toString();
 
+                //отсылаем обновление о переводе в строку
+                publishProgress("1.2");
+
                 //закрываем соединение
                 urlConnection.disconnect();
 
             } catch (Exception e) {
                 error_connect = true;
                 publishProgress("-1");
-                e.printStackTrace();
             }
 
             // объявляем json-массив
@@ -142,29 +140,35 @@ public class MainActivity extends AppCompatActivity{
             //если успешно скачали, то начинаем парсить
             if(!error_connect) {
                 try {
-                    publishProgress("-2");
+
                     dataJsonObj = new JSONArray(resultJson);
 
+                    publishProgress("2.1"); //начали разделовать json
+
                     // идём по всем исполнителям
-                    for (int i = 0; i < dataJsonObj.length(); i++) {
+                    int len = dataJsonObj.length(); //чуть ускоряем работу
+                    String unknownData = getResources().getString(R.string.unknown);    //пишем вместо "данных нет"
+
+                    for (int i = 0; i < len; i++) {
                         JSONObject artist = dataJsonObj.getJSONObject(i);
 
-                        Integer art_id = -i;    //чтобы не повторялись
+                        Integer art_id = -i;    //чтобы не повторялись, вдруг пригодится
                         if (artist.has("id")) {
                             art_id = artist.getInt("id");
                         }
 
-                        String art_name = "[" + getResources().getString(R.string.unknown) + "]";
+                        String art_name = unknownData;
                         if (artist.has("name")) {
                             art_name = artist.getString("name"); //получаем строку с именем
                         }
 
-                        String art_genresNames = "[" + getResources().getString(R.string.unknown) + "]";
+                        String art_genresNames = unknownData;
                         if (artist.has("genres")) {
                             JSONArray art_genresJSON = artist.getJSONArray("genres");   //получаем массив названий жанров
-                            if (art_genresJSON.length() > 0) {
+                            int artGenLength = art_genresJSON.length();     //чтоб чуть побыстрее
+                            if (artGenLength > 0) {
                                 art_genresNames = art_genresJSON.getString(0); //перезаписываем жанры в строку
-                                for (int j = 1; j < art_genresJSON.length(); j++) { // с 1, т.к. первый уже записан
+                                for (int j = 1; j < artGenLength; j++) { // с 1, т.к. первый уже записан
                                     art_genresNames = art_genresNames + ", " + art_genresJSON.getString(j);
                                 }
                             }
@@ -185,7 +189,7 @@ public class MainActivity extends AppCompatActivity{
                             art_link = artist.getString("link"); //получаем ссылку
                         }
 
-                        String art_description = "[" + getResources().getString(R.string.unknown) + "]";
+                        String art_description = unknownData;
                         if (artist.has("description")) {
                             art_description = artist.getString("description"); //получаем описание
                         }
@@ -205,53 +209,103 @@ public class MainActivity extends AppCompatActivity{
                             }
                         }
 
+                        if(i == len/4 + 1){
+                            publishProgress("2.2"); //четверть прошли
+                        }
+
+                        if(i == len/2 + 1){
+                            publishProgress("2.3"); //половину прошли
+                        }
+
+                        if(i == 3*len/4 + 1){
+                            publishProgress("2.4"); // 3\4 прошли
+                        }
+
                         String[] strToAddAndUpdate = {art_id.toString(), art_name, art_genresNames, art_tracks.toString(), art_albums.toString(), art_link, art_description, art_cover_small, art_cover_big};
-                        publishProgress(strToAddAndUpdate);
+                        publishProgress(strToAddAndUpdate); //отсылаем и обновляем
 
                     }
 
                 } catch (JSONException e) {
                     error_parse = true;
-                    publishProgress("-3");
-                    e.printStackTrace();
+                    publishProgress("-2");
                 }
             }
             return null;
         }
 
-        protected void onPostExecute(Void... params) {
+        @Override
+        protected void onPostExecute(Void param){
+            super.onPostExecute(param);
+
+            //в любом случае закрываем ширму диалога
             pDialog.dismiss();
+
+            if(error_connect || error_parse){
+                bt.setVisibility(View.VISIBLE);
+            }else{
+                bt.setVisibility(View.INVISIBLE);
+            }
 
         }
 
         @Override
         protected void onProgressUpdate(String... progress) {
 
-            //прячем диалог (слишком долго)
-            pDialog.hide();
+            if(progress[0].equals("1.1")){
+                pDialog.setMessage( getResources().getString(R.string.async_1_1_connect) );
+                return;
+            }
+
+            if(progress[0].equals("1.2")){
+                pDialog.setMessage( getResources().getString(R.string.async_1_2_convert));
+                return;
+            }
 
             if(progress[0].equals("-1")){
+
+                pDialog.hide(); //прячем диалог
                 Toast.makeText(main_context, getResources().getString(R.string.error_connect), Toast.LENGTH_LONG).show();
                 return;
             }
 
-            if(progress[0].equals("-2")){
-                pDialog.setMessage("Parsing JSON file ...");
+            if(progress[0].equals("2.1")){
+                pDialog.setMessage( getResources().getString(R.string.async_2_1_parsing) );
                 return;
             }
 
-            if(progress[0].equals("-3")){
+            if(progress[0].equals("2.2")){
+                pDialog.setMessage( getResources().getString(R.string.async_2_2_parsing) );
+                return;
+            }
+
+            if(progress[0].equals("2.3")){
+                pDialog.setMessage( getResources().getString(R.string.async_2_3_parsing)  );
+                return;
+            }
+
+            if(progress[0].equals("2.4")){
+                pDialog.setMessage( getResources().getString(R.string.async_2_4_parsing) );
+                return;
+            }
+
+            if(progress[0].equals("-2")){
+                pDialog.hide(); //прячем диалог
                 Toast.makeText(main_context, getResources().getString(R.string.error_parse), Toast.LENGTH_LONG).show();
                 return;
             }
 
+            //прячем диалог
+            //pDialog.hide();
+            //прячем кнопку обновления
+            //bt.setVisibility(View.INVISIBLE);
 
             //помещаем данные в объект для исполнителей
             ArtistObject ArtObject = new ArtistObject(Integer.parseInt(progress[0]), progress[1], progress[2], Integer.parseInt(progress[3]), Integer.parseInt(progress[4]), progress[5], progress[6], progress[7], progress[8]);
             //помещаем объект в общий список, для занесения в ListView
             listOfArtistsObjects.add(ArtObject);
             adapter.notifyDataSetChanged();
-            //listView.requestLayout();
+            //listView.requestLayout(); //более "глубокая" перезагрузка
             listView.invalidate();
         }
     }
