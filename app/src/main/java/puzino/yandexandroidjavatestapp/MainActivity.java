@@ -33,7 +33,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 public class MainActivity extends AppCompatActivity{
 
     //главный урл всея приложения
-    public String mainYandexURL = "http://download.cdn.yandex.net/mobilization-2016/artists.json";
+    public String mainYandexURL = "http://yury.sytes.net/29_yandex_app/artists.json";
 
     boolean error_connect = false;  //предполагаем наличие соединения и успешно загрузки
     boolean error_parse = false;  //предполагаем успешную разделку json файла

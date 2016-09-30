@@ -1,1 +1,1 @@
-include ':app', ':google_volley'
+include ':app'
